@@ -1,0 +1,82 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+#
+# NOTE: `shopify app config link` overwrites this file from the Dev Dashboard and
+# will silently drop the [[webhooks.subscriptions]] blocks below if the remote
+# app has none configured. After running it, check that this section survived,
+# then `npm run deploy` to push these subscriptions back up.
+
+client_id = "18caab9d4af6905ac1786c0f26bd21d8"
+application_url = "https://lopez-tenant-books-nature.trycloudflare.com"
+embedded = true
+name = "Shopboost"
+# No explicit `handle`: it must be globally unique across all Shopify apps,
+# and Shopify assigns one from the name if it is omitted.
+
+[access_scopes]
+# Every scope below is required by an operation the app actually runs. The
+# required-scope lists come from validating each document against the live
+# Admin schema — App Store reviewers ask about theme scopes in particular.
+#
+#   read_products            bulk catalog audit; product reads before each write
+#   write_products           productUpdate (SEO title/description, descriptionHtml)
+#   read_files               media, fileSize and originalSource in the audit
+#   write_files              fileUpdate — alt text and in-place image replacement
+#   read_themes              required by the media/file read paths above
+#   write_themes             required by fileUpdate for theme-owned image files
+#   read_online_store_pages  page/collection SEO metafield reads
+#
+# The app never writes theme code: no ScriptTag, no Asset API, no
+# themeFilesUpsert. Storefront output is a theme app extension the merchant
+# activates themselves (extensions/shopboost-storefront).
+scopes = "read_files,read_online_store_pages,read_products,read_themes,write_files,write_products,write_themes"
+
+[auth]
+redirect_urls = [ "https://lopez-tenant-books-nature.trycloudflare.com/auth/callback" ]
+
+[webhooks]
+# 2026-07 is the latest *stable* version (supported to 2026-07-16 + 12 months).
+# The CLI defaults this to 2026-10, which is a **release candidate** — Shopify
+# advises against release candidates in production, and the installed
+# @shopify/shopify-api has no October26 enum value to match it with.
+# Keep this in sync with `apiVersion` in app/shopify.server.ts.
+api_version = "2026-07"
+
+  # Handled by: /app/routes/webhooks.app.uninstalled.tsx
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  # Handled by: /app/routes/webhooks.app.scopes_update.tsx
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+  # Keeps the audit fresh when a merchant edits a product themselves.
+  # Handled by: /app/routes/webhooks.products.update.tsx
+  [[webhooks.subscriptions]]
+  topics = [ "products/update" ]
+  uri = "/webhooks/products/update"
+
+  # Fires when the catalog audit export finishes. Delivery is not guaranteed,
+  # so the audit job also polls as a fallback.
+  # Handled by: /app/routes/webhooks.bulk-operations.finish.tsx
+  [[webhooks.subscriptions]]
+  topics = [ "bulk_operations/finish" ]
+  uri = "/webhooks/bulk-operations/finish"
+
+  # Mandatory compliance topics for public apps. Required to pass App Store
+  # review — do not remove.
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/data_request"
+  compliance_topics = [ "customers/data_request" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/customers/redact"
+  compliance_topics = [ "customers/redact" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/shop/redact"
+  compliance_topics = [ "shop/redact" ]
+
+[build]
+automatically_update_urls_on_dev = true

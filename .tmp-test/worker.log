@@ -1,0 +1,102 @@
+
+> worker
+> tsx watch worker/index.ts
+
+[shopify-api/INFO] version 13.1.0, environment React Router
+Shopboost worker up — queues: ping, audit, images, seo, geo, speed
+[ping] round-trip 2ms · 1 shop(s) in database
+[ping] ✓ 7
+[audit] sitezone-test-store.myshopify.com initial: score 33 · 1460 products · 4774 images to compress · 1460 SEO issues
+[audit] ✓ 14
+[audit] sitezone-test-store.myshopify.com scheduled: score 33 · 1460 products · 4774 images to compress · 1460 SEO issues
+[audit] ✓ 15
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595225944 (attempt 1/5): Download failed: 400 Bad Request
+[geo] ✓ sitezone-test-store.myshopify.com__geo__cmu5czhty0002sfgc78wrwuv7__Product/15729971659096
+[geo] ✓ sitezone-test-store.myshopify.com__geo__cmu5czhty0002sfgc78wrwuv7__Product/15729971691864
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596274520 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595062104 (attempt 1/5): Download failed: 400 Bad Request
+[geo] ✓ sitezone-test-store.myshopify.com__geo__cmu5czhty0002sfgc78wrwuv7__Product/15729971724632
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192 (attempt 1/5): Download failed: 400 Bad Request
+[speed] sitezone-test-store.myshopify.com: 1 finding(s), PSI mobile n/a / desktop n/a
+[speed] ✓ sitezone-test-store.myshopify.com__speed__cmu5czhty0002sfgc78wrwuv7
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594799960 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596143448 (attempt 1/5): Download failed: 400 Bad Request
+[seo] vidaXL TV-Schränk Schwarz Eichen-Optik 60 x 35 x 40 cm Holzwerkstoff: 22 change(s) via template
+[seo] ✓ sitezone-test-store.myshopify.com__seo__cmu5czhty0002sfgc78wrwuv7__Product/15729971659096
+[seo] vidaXL TV-Schränk mit LED 2 pcs Schwarz Eichen-Optik 60 x 35 x 40 cm: 21 change(s) via template
+[seo] ✓ sitezone-test-store.myshopify.com__seo__cmu5czhty0002sfgc78wrwuv7__Product/15729971691864
+[seo] vidaXL TV-Schränk Schwarz Eichen-Optik 90 x 35 x 40 cm Holzwerkstoff: 15 change(s) via template
+[seo] ✓ sitezone-test-store.myshopify.com__seo__cmu5czhty0002sfgc78wrwuv7__Product/15729971724632
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595520856 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595881304 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594996568 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594832728 (attempt 1/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595225944 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596274520 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595062104 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594799960 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595520856 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596143448 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595881304 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594996568 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594832728 (attempt 2/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596274520 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595225944 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594799960 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595062104 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595520856 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596143448 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595881304 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594996568 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594832728 (attempt 3/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596274520 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594799960 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595225944 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595062104 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595520856 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595881304 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596143448 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594996568 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594832728 (attempt 4/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596274520 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594799960 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595225944 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595062104 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595520856 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042596143448 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042595881304 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594996568 (attempt 5/5): Download failed: 400 Bad Request
+[images] ✗ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594832728 (attempt 5/5): Download failed: 400 Bad Request
+[audit] sitezone-test-store.myshopify.com after: score 33 · 1460 products · 4774 images to compress · 1457 SEO issues
+[audit] ✓ 22
+12:02:35 PM [tsx] change in ./app/lib/images/upload.server.ts Restarting...
+
+SIGTERM received — draining workers…
+Workers closed.
+[shopify-api/INFO] version 13.1.0, environment React Router
+Shopboost worker up — queues: ping, audit, images, seo, geo, speed
+12:02:44 PM [tsx] change in ./worker/processors/images.ts Restarting...
+
+SIGTERM received — draining workers…
+Workers closed.
+[shopify-api/INFO] version 13.1.0, environment React Router
+Shopboost worker up — queues: ping, audit, images, seo, geo, speed
+[images] ✓ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594668888__retry1
+[images] gid://shopify/MediaImage/71042594767192: 67KB → 59KB (−12%)
+[images] ✓ sitezone-test-store.myshopify.com__images__cmu5czhty0002sfgc78wrwuv7__MediaImage/71042594767192__retry1
+[audit] sitezone-test-store.myshopify.com scheduled: score 33 · 1460 products · 4774 images to compress · 1460 SEO issues
+[audit] ✓ sitezone-test-store.myshopify.com__audit__scheduled__1pyy64e
+[audit] sitezone-test-store.myshopify.com scheduled: score 33 · 1460 products · 4774 images to compress · 1460 SEO issues
+[audit] ✓ 40
+
+SIGTERM received — draining workers…
+Workers closed.

@@ -1,0 +1,124 @@
+{%- comment -%}
+  Shopboost — structured data and resource hints.
+
+  An app embed block with target "head": Shopify injects it before </head> on
+  every page, in both Online Store 2.0 and vintage themes. Merchants activate it
+  in Theme settings > App embeds; the app deep-links them there.
+
+  Everything here is server-rendered Liquid. No JavaScript, no external
+  requests, no blocking resources — an optimizer that slowed the storefront down
+  would be self-defeating.
+
+  All values go through the `json` filter, which both quotes and escapes them.
+  Never interpolate a merchant string into JSON-LD without it.
+{%- endcomment -%}
+
+{%- if block.settings.enable_product_schema and template contains 'product' and product -%}
+  {%- assign img = product.featured_image | image_url: width: 1200 -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": {{ product.title | json }},
+      "description": {{ product.description | strip_html | truncatewords: 80 | json }},
+      {%- if img %}
+      "image": {{ img | prepend: 'https:' | json }},
+      {%- endif %}
+      {%- if product.vendor != blank %}
+      "brand": { "@type": "Brand", "name": {{ product.vendor | json }} },
+      {%- endif %}
+      {%- if product.selected_or_first_available_variant.sku != blank %}
+      "sku": {{ product.selected_or_first_available_variant.sku | json }},
+      {%- endif %}
+      "url": {{ request.origin | append: product.url | json }},
+      "offers": {
+        "@type": "Offer",
+        "price": {{ product.price | divided_by: 100.0 | json }},
+        "priceCurrency": {{ cart.currency.iso_code | json }},
+        "availability": {%- if product.available -%}"https://schema.org/InStock"{%- else -%}"https://schema.org/OutOfStock"{%- endif -%},
+        "url": {{ request.origin | append: product.url | json }}
+      }
+    }
+  </script>
+
+  {%- assign faq = product.metafields.shopboost.faq.value -%}
+  {%- if block.settings.enable_faq_schema and faq -%}
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org/",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {%- for entry in faq -%}
+            {
+              "@type": "Question",
+              "name": {{ entry.question | json }},
+              "acceptedAnswer": { "@type": "Answer", "text": {{ entry.answer | json }} }
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+  {%- endif -%}
+{%- endif -%}
+
+{%- if block.settings.enable_org_schema and template.name == 'index' -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Organization",
+      "name": {{ shop.name | json }},
+      "url": {{ request.origin | json }}
+      {%- if shop.brand.logo %},
+      "logo": {{ shop.brand.logo | image_url: width: 512 | prepend: 'https:' | json }}
+      {%- endif %}
+    }
+  </script>
+{%- endif -%}
+
+{%- comment -%}
+  Resource hints. `preconnect` is deliberately limited to two origins: Shopify's
+  own CDN and the font host. Shopify's performance guidance is explicit that
+  overusing hints competes with the browser's own prioritisation and can make
+  pages slower.
+{%- endcomment -%}
+{%- if block.settings.enable_preconnect -%}
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Shopboost",
+  "target": "head",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_product_schema",
+      "label": "Product structured data",
+      "info": "Helps search and AI answer engines describe your products accurately.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_faq_schema",
+      "label": "FAQ structured data",
+      "info": "Publishes the questions and answers Shopboost generated for each product.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_org_schema",
+      "label": "Organization structured data",
+      "info": "Adds your shop name and logo to the home page.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_preconnect",
+      "label": "Preconnect to Shopify's CDN",
+      "info": "Starts the connection to Shopify's image and font servers earlier.",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

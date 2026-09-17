@@ -1,0 +1,157 @@
+// Shopboost — data model
+// Sessions come from @shopify/shopify-app-session-storage-prisma (shape is fixed
+// by that package). Everything else is ours.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+/// One row per installed shop. `settings` holds the dashboard knobs (see
+/// app/lib/settings.server.ts for the shape and defaults).
+model Shop {
+  domain      String   @id
+  settings    Json     @default("{}")
+  installedAt DateTime @default(now())
+  uninstalledAt DateTime?
+
+  /// Set while a boost is in flight so the UI can disable the button and
+  /// the orchestrator can refuse to double-run.
+  activeBoostId String?
+
+  audits AuditSnapshot[]
+  jobs   OptimizationJob[]
+
+  @@map("shops")
+}
+
+/// A point-in-time score of the shop. Two of these (kind=before / kind=after)
+/// bracket every boost and power the before/after panel.
+model AuditSnapshot {
+  id        String   @id @default(cuid())
+  shopDomain String
+  shop      Shop     @relation(fields: [shopDomain], references: [domain], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  /// "initial" | "before" | "after" | "scheduled"
+  kind String
+
+  boostScore Int
+  imageScore Int
+  seoScore   Int
+  geoScore   Int
+  speedScore Int
+
+  /// Raw counters behind the scores: byte totals, missing-meta counts, PSI
+  /// results, and the per-resource findings the modules consume as their
+  /// work list. See app/lib/audit/score.server.ts.
+  totals Json
+
+  /// Set when this snapshot was taken as part of a boost.
+  boostId String?
+
+  @@index([shopDomain, createdAt])
+  @@map("audit_snapshots")
+}
+
+/// A boost groups the module jobs triggered by one press of the button.
+model Boost {
+  id         String    @id @default(cuid())
+  shopDomain String
+  createdAt  DateTime  @default(now())
+  finishedAt DateTime?
+
+  /// "running" | "done" | "failed" | "cancelled"
+  status String @default("running")
+
+  /// Snapshot of the knobs at press time, so history is interpretable later.
+  settings Json
+
+  jobs OptimizationJob[]
+
+  @@index([shopDomain, createdAt])
+  @@map("boosts")
+}
+
+/// One unit of module work. Job id mirrors the BullMQ job id so the queue and
+/// the database never disagree about what ran.
+model OptimizationJob {
+  id         String    @id
+  shopDomain String
+  shop       Shop      @relation(fields: [shopDomain], references: [domain], onDelete: Cascade)
+  boostId    String?
+  boost      Boost?    @relation(fields: [boostId], references: [id], onDelete: Cascade)
+
+  /// "audit" | "images" | "seo" | "geo" | "speed"
+  module String
+  /// "queued" | "running" | "done" | "failed" | "skipped" | "rolled_back"
+  status String @default("queued")
+
+  /// Human-readable subject, e.g. the product title. Kept denormalized so the
+  /// queue table renders without extra Shopify calls.
+  label String?
+
+  attempts  Int       @default(0)
+  error     String?
+  createdAt DateTime  @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+
+  items OptimizationItem[]
+
+  @@index([shopDomain, createdAt])
+  @@index([boostId])
+  @@map("optimization_jobs")
+}
+
+/// One changed field on one Shopify resource. `before` is both the rollback
+/// source and the before/after UI source — never write a field without one.
+model OptimizationItem {
+  id     String          @id @default(cuid())
+  jobId  String
+  job    OptimizationJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  /// gid://shopify/MediaImage/… or gid://shopify/Product/…
+  resourceId String
+  /// "image" | "alt" | "seo.title" | "seo.description" | "metafield.title_tag" | …
+  field String
+
+  before Json
+  after  Json
+
+  /// "done" | "skipped" | "failed" | "rolled_back"
+  status     String
+  reason     String?
+  savedBytes Int?
+
+  createdAt DateTime @default(now())
+
+  @@index([jobId])
+  @@index([resourceId])
+  @@map("optimization_items")
+}

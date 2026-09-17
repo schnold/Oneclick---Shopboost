@@ -36,7 +36,7 @@
     "@react-router/serve": "7.18.2",
     "@shopify/app-bridge-react": "^4.2.4",
     "@shopify/shopify-app-react-router": "^1.1.0",
-    "@shopify/shopify-app-session-storage-prisma": "^9.0.0",
+    "@shopify/shopify-app-session-storage-prisma": "^10.0.1",
     "bullmq": "^5.34.0",
     "dotenv": "^16.4.7",
     "ioredis": "^5.4.2",

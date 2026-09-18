@@ -21,7 +21,19 @@ const REQUIRED = [
   ["SHOPIFY_API_SECRET", "app client secret"],
 ] as const;
 
-const missing = REQUIRED.filter(([name]) => !process.env[name]);
+/**
+ * `redisUrl()` derives a TCP connection string from Upstash's REST pair, so
+ * either form satisfies the Redis requirement. Checked by name here rather than
+ * by importing redis.server.ts, which would pull ioredis into the preflight.
+ */
+const hasUpstash = Boolean(
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN,
+);
+
+const missing = REQUIRED.filter(
+  ([name]) =>
+    !process.env[name] && !(name === "REDIS_URL" && hasUpstash),
+);
 
 if (missing.length > 0) {
   console.error(

@@ -6,7 +6,7 @@
 # then `npm run deploy` to push these subscriptions back up.
 
 client_id = "18caab9d4af6905ac1786c0f26bd21d8"
-application_url = "https://lopez-tenant-books-nature.trycloudflare.com"
+application_url = "https://oneclickshopboost.netlify.app"
 embedded = true
 name = "Shopboost"
 # No explicit `handle`: it must be globally unique across all Shopify apps,
@@ -31,7 +31,7 @@ name = "Shopboost"
 scopes = "read_files,read_online_store_pages,read_products,read_themes,write_files,write_products,write_themes"
 
 [auth]
-redirect_urls = [ "https://lopez-tenant-books-nature.trycloudflare.com/auth/callback" ]
+redirect_urls = [ "https://oneclickshopboost.netlify.app/auth/callback" ]
 
 [webhooks]
 # 2026-07 is the latest *stable* version (supported to 2026-07-16 + 12 months).

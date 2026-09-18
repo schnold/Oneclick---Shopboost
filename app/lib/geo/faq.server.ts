@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { generateJson } from "../ai/openrouter.server";
 import { hasAiKey, truncateAtWord, type ProductContext } from "../seo/copy.server";
 
 /**
@@ -107,58 +107,43 @@ export async function generateFaq(
     return { entries: [], rejected: 0 };
   }
 
-  const anthropic = new Anthropic();
+  const parsed = await generateJson<{ entries?: FaqEntry[] }>({
+    system: SYSTEM,
+    input: {
+      title: ctx.title,
+      vendor: ctx.vendor,
+      productType: ctx.productType,
+      tags: ctx.tags.slice(0, 20),
+      description: truncateAtWord(ctx.description, 4_000),
+    },
+    schemaName: "product_faq",
+    schema: FAQ_SCHEMA,
+    maxTokens: 4_000,
+    logPrefix: "[geo] FAQ generation unavailable:",
+  });
 
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 4_000,
-      system: SYSTEM,
-      output_config: { format: { type: "json_schema", schema: FAQ_SCHEMA } },
-      messages: [
-        {
-          role: "user",
-          content: JSON.stringify({
-            title: ctx.title,
-            vendor: ctx.vendor,
-            productType: ctx.productType,
-            tags: ctx.tags.slice(0, 20),
-            description: truncateAtWord(ctx.description, 4_000),
-          }),
-        },
-      ],
-    });
+  if (!parsed) return null;
 
-    if (response.stop_reason === "refusal") return null;
+  const raw = Array.isArray(parsed.entries) ? parsed.entries : [];
 
-    const block = response.content.find((c) => c.type === "text");
-    if (!block || block.type !== "text") return null;
+  const entries: FaqEntry[] = [];
+  let rejected = 0;
 
-    const parsed = JSON.parse(block.text) as { entries?: FaqEntry[] };
-    const raw = Array.isArray(parsed.entries) ? parsed.entries : [];
-
-    const entries: FaqEntry[] = [];
-    let rejected = 0;
-
-    for (const entry of raw.slice(0, MAX_ENTRIES)) {
-      const question = truncateAtWord(String(entry.question ?? "").trim(), MAX_QUESTION);
-      const answer = truncateAtWord(String(entry.answer ?? "").trim(), MAX_ANSWER);
-      if (question.length < 8 || answer.length < 20) {
-        rejected++;
-        continue;
-      }
-      if (!isGrounded({ question, answer }, source)) {
-        rejected++;
-        continue;
-      }
-      entries.push({ question, answer });
+  for (const entry of raw.slice(0, MAX_ENTRIES)) {
+    const question = truncateAtWord(String(entry.question ?? "").trim(), MAX_QUESTION);
+    const answer = truncateAtWord(String(entry.answer ?? "").trim(), MAX_ANSWER);
+    if (question.length < 8 || answer.length < 20) {
+      rejected++;
+      continue;
     }
-
-    return { entries, rejected };
-  } catch (error) {
-    console.warn(`[geo] FAQ generation unavailable: ${(error as Error).message}`);
-    return null;
+    if (!isGrounded({ question, answer }, source)) {
+      rejected++;
+      continue;
+    }
+    entries.push({ question, answer });
   }
+
+  return { entries, rejected };
 }
 
 /**

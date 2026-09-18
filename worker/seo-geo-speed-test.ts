@@ -181,8 +181,8 @@ console.log("\n── Storefront scan ──");
 console.log("\n── AI configuration ──");
 console.log(
   hasAiKey()
-    ? "  ANTHROPIC_API_KEY is set — AI copy and FAQ generation are active."
-    : "  No ANTHROPIC_API_KEY — copy falls back to templates and FAQs are skipped.",
+    ? "  OPEN_ROUTER_API_KEY is set — AI copy and FAQ generation are active."
+    : "  No OPEN_ROUTER_API_KEY — copy falls back to templates and FAQs are skipped.",
 );
 check("the app works either way", true, hasAiKey() ? "AI path" : "template path");
 

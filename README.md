@@ -16,7 +16,7 @@ automated checks.
 | Module | What it does |
 |---|---|
 | **Images** | Recompresses in place via `fileUpdate` — same media ID, so product and variant references survive. Fully reversible. |
-| **SEO** | Meta titles, descriptions and alt text. Uses Claude when a key is set, a deterministic template generator otherwise. Never overwrites merchant copy by default. |
+| **SEO** | Meta titles, descriptions and alt text. Uses an AI model via OpenRouter when a key is set, a deterministic template generator otherwise. Never overwrites merchant copy by default. |
 | **GEO** | Product, FAQ and Organization JSON-LD through a theme app extension, plus grounded product FAQs stored in a metafield. |
 | **Speed** | PageSpeed Insights measurement plus a storefront scan against Shopify's documented anti-patterns, reported as exact theme edits. |
 
@@ -51,6 +51,12 @@ createdb shopboost
 
 `DATABASE_URL` then looks like `postgresql://$(whoami)@localhost:5432/shopboost`
 and `REDIS_URL` like `redis://127.0.0.1:6379`.
+
+In production Redis is Upstash. Either set `REDIS_URL` to its TCP string, or set
+`UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` — the pair Upstash's
+hosting integrations inject — and `app/lib/redis.server.ts` derives the TCP URL
+from them. BullMQ speaks the Redis wire protocol and cannot use the REST API, so
+the REST variables alone are not enough without that translation.
 
 ## Running
 
@@ -179,7 +185,7 @@ The app is fully functional without either key, and degrades honestly:
 
 | Key | Without it |
 |---|---|
-| `ANTHROPIC_API_KEY` | SEO copy comes from a deterministic template generator instead of Claude. Product FAQs are skipped entirely rather than invented. |
+| `OPEN_ROUTER_API_KEY` | SEO copy comes from a deterministic template generator instead of a model. Product FAQs are skipped entirely rather than invented. |
 | `PSI_API_KEY` | PageSpeed Insights still runs at a lower anonymous quota. On a rate limit the speed ring reads "Not measured" and the storefront scan still reports its findings. |
 
 ## Dependency audit
@@ -212,22 +218,25 @@ blocker** and a handful of things only you can confirm.
 
 ### Blocker — the app URL is still a placeholder
 
-`shopify.app.toml` ships with the template's values:
+The production URL is **https://oneclickshopboost.netlify.app**. It is set in
+three places that must agree:
 
 ```toml
-application_url = "https://shopify.dev/apps/default-app-home"
-redirect_urls   = [ "https://shopify.dev/apps/default-app-home/api/auth" ]
+# shopify.app.toml
+application_url = "https://oneclickshopboost.netlify.app"
+redirect_urls   = [ "https://oneclickshopboost.netlify.app/auth/callback" ]
 ```
 
-OAuth currently redirects merchants to Shopify's docs site instead of into the
-app. `shopify app dev` rewrites these to the tunnel URL while developing
-(`automatically_update_urls_on_dev = true`), so it is not visible locally — but
-it must be set to the real production URL and deployed before submission:
+```bash
+# .env on the host (no trailing slash)
+SHOPIFY_APP_URL=https://oneclickshopboost.netlify.app
+```
+
+`shopify app dev` rewrites the toml URLs to the tunnel URL while developing
+(`automatically_update_urls_on_dev = true`) and pushes them to the Dev
+Dashboard. After a dev session, restore the production URLs and deploy:
 
 ```bash
-# after the app is hosted somewhere
-#   application_url = "https://your-host.example.com"
-#   redirect_urls   = [ "https://your-host.example.com/auth/callback" ]
 npm run deploy
 ```
 

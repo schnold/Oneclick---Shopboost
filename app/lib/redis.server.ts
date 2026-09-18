@@ -13,11 +13,30 @@ declare global {
   var __shopboostRedis: IORedis | undefined;
 }
 
+/**
+ * Upstash's hosting integrations inject REST credentials, but BullMQ speaks the
+ * Redis wire protocol — `@upstash/redis` over HTTP cannot back a queue, because
+ * a Worker holds a blocking command open for its entire lifetime. Upstash
+ * accepts the REST token as the TCP password on the same host, so a `rediss://`
+ * URL derived from the pair is a working connection string.
+ *
+ * `rediss` (two s) is not a typo: Upstash requires TLS.
+ */
+export function upstashRedisUrl(): string | null {
+  const rest = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!rest || !token) return null;
+
+  const host = new URL(rest).hostname;
+  return `rediss://default:${encodeURIComponent(token)}@${host}:6379`;
+}
+
 export function redisUrl(): string {
-  const url = process.env.REDIS_URL;
+  const url = process.env.REDIS_URL || upstashRedisUrl();
   if (!url) {
     throw new Error(
-      "REDIS_URL is not set. Copy .env.example to .env and fill it in.",
+      "No Redis connection configured. Set REDIS_URL, or UPSTASH_REDIS_REST_URL " +
+        "and UPSTASH_REDIS_REST_TOKEN together. Copy .env.example to .env.",
     );
   }
   return url;

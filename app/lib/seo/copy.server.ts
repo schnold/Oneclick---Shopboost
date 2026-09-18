@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { generateJson, hasAiKey } from "../ai/openrouter.server";
 import type { ShopSettings } from "../settings.server";
 import {
   SEO_TITLE_MAX,
@@ -12,7 +12,7 @@ import {
  *
  * Two generators, same interface:
  *
- *  - **AI** (when ANTHROPIC_API_KEY is set) writes copy from the product's own
+ *  - **AI** (when OPEN_ROUTER_API_KEY is set) writes copy from the product's own
  *    details in the merchant's chosen voice.
  *  - **Template** is a deterministic fallback used when there is no key, when
  *    the model declines, or when its output fails validation.
@@ -39,9 +39,8 @@ export type GeneratedCopy = {
 
 export type CopySource = "ai" | "template";
 
-export function hasAiKey(): boolean {
-  return Boolean(process.env.ANTHROPIC_API_KEY);
-}
+/** Re-exported so the SEO and GEO modules share one definition of "AI is on". */
+export { hasAiKey };
 
 /** Collapses HTML into the plain sentence text a search engine would index. */
 export function plainText(html: string | null | undefined): string {
@@ -177,14 +176,16 @@ const COPY_SCHEMA = {
       additionalProperties: { type: "string" as const },
     },
   },
-  required: ["title", "description"],
+  // Strict structured output requires every property to be listed here, so
+  // altTexts is required and comes back as {} when there is nothing to write.
+  required: ["title", "description", "altTexts"],
   additionalProperties: false,
 };
 
 /**
- * Asks Claude for copy, then validates it. Anything that comes back outside the
- * length bounds is repaired by truncation rather than trusted, because these
- * strings go straight onto the storefront.
+ * Asks the model for copy, then validates it. Anything that comes back outside
+ * the length bounds is repaired by truncation rather than trusted, because
+ * these strings go straight onto the storefront.
  */
 export async function aiCopy(
   ctx: ProductContext,
@@ -193,64 +194,46 @@ export async function aiCopy(
 ): Promise<GeneratedCopy | null> {
   if (!hasAiKey()) return null;
 
-  const anthropic = new Anthropic();
+  const parsed = await generateJson<{
+    title?: string;
+    description?: string;
+    altTexts?: Record<string, string>;
+  }>({
+    system: systemPrompt(settings, ctx.shopName),
+    input: {
+      title: ctx.title,
+      vendor: ctx.vendor,
+      productType: ctx.productType,
+      tags: ctx.tags.slice(0, 20),
+      description: truncateAtWord(ctx.description, 2_000),
+      imagesNeedingAltText: mediaIds,
+    },
+    schemaName: "seo_copy",
+    schema: COPY_SCHEMA,
+    maxTokens: 2_000,
+    logPrefix: "[seo] AI copy unavailable, using template:",
+  });
 
-  try {
-    const response = await anthropic.messages.create({
-      model: "claude-opus-5",
-      max_tokens: 2_000,
-      system: systemPrompt(settings, ctx.shopName),
-      output_config: { format: { type: "json_schema", schema: COPY_SCHEMA } },
-      messages: [
-        {
-          role: "user",
-          content: JSON.stringify({
-            title: ctx.title,
-            vendor: ctx.vendor,
-            productType: ctx.productType,
-            tags: ctx.tags.slice(0, 20),
-            description: truncateAtWord(ctx.description, 2_000),
-            imagesNeedingAltText: mediaIds,
-          }),
-        },
-      ],
-    });
+  if (!parsed) return null;
 
-    // A safety refusal is a normal outcome, not an error — fall back quietly.
-    if (response.stop_reason === "refusal") return null;
+  const title = truncateAtWord((parsed.title ?? "").trim(), SEO_TITLE_MAX);
+  const description = truncateAtWord(
+    (parsed.description ?? "").trim(),
+    SEO_DESC_MAX,
+  );
 
-    const block = response.content.find((c) => c.type === "text");
-    if (!block || block.type !== "text") return null;
+  // Too short is not repairable by truncation; fall back rather than ship a
+  // stub description.
+  if (title.length < 10 || description.length < SEO_DESC_MIN) return null;
 
-    const parsed = JSON.parse(block.text) as {
-      title?: string;
-      description?: string;
-      altTexts?: Record<string, string>;
-    };
-
-    const title = truncateAtWord((parsed.title ?? "").trim(), SEO_TITLE_MAX);
-    const description = truncateAtWord(
-      (parsed.description ?? "").trim(),
-      SEO_DESC_MAX,
-    );
-
-    // Too short is not repairable by truncation; fall back rather than ship a
-    // stub description.
-    if (title.length < 10 || description.length < SEO_DESC_MIN) return null;
-
-    const altTexts: Record<string, string> = {};
-    for (const [id, value] of Object.entries(parsed.altTexts ?? {})) {
-      if (typeof value === "string" && value.trim()) {
-        altTexts[id] = truncateAtWord(value.trim(), 250);
-      }
+  const altTexts: Record<string, string> = {};
+  for (const [id, value] of Object.entries(parsed.altTexts ?? {})) {
+    if (typeof value === "string" && value.trim()) {
+      altTexts[id] = truncateAtWord(value.trim(), 250);
     }
-
-    return { title, description, altTexts, source: "ai" };
-  } catch (error) {
-    // Rate limits, network failures, malformed JSON — none should fail a boost.
-    console.warn(`[seo] AI copy unavailable, using template: ${(error as Error).message}`);
-    return null;
   }
+
+  return { title, description, altTexts, source: "ai" };
 }
 
 /** Alt text from product facts, for the no-AI path. */

@@ -131,6 +131,13 @@ the idiomatic React Router pattern, so it costs nothing.
   should be re-enqueued, not burn a retry attempt.
 - One job per resource, not per shop: granular progress, cheap retries, and one
   bad image cannot fail a batch.
+- **Upstash's REST API cannot back the queue.** BullMQ speaks the Redis wire
+  protocol and a Worker holds a blocking command open for its whole lifetime,
+  so `@upstash/redis` over HTTP is not an option. The REST token doubles as the
+  TCP password on the same host, so `redisUrl()` derives
+  `rediss://default:<token>@<host>:6379` from `UPSTASH_REDIS_REST_URL` /
+  `UPSTASH_REDIS_REST_TOKEN` when `REDIS_URL` is unset. Every connection goes
+  through that one function — do not call `new IORedis` anywhere else.
 - Job payloads must never contain access tokens. Workers load offline sessions
   from Prisma by shop domain (`shopifyGraphql(shopDomain, …)`).
 
@@ -239,6 +246,19 @@ stay the **first import** in `worker/index.ts` and in every test script, because
   any measurement or policy claim the product data does not support. A
   fabricated answer becomes the answer an AI assistant gives a shopper, so
   silence is the correct failure mode.
+- **Every AI call goes through `app/lib/ai/openrouter.server.ts`.** OpenRouter's
+  chat-completions endpoint is OpenAI-shaped and fronts every provider, so there
+  is no vendor SDK and changing model means changing `OPEN_ROUTER_MODEL`. The
+  model must support structured outputs — check `supported_parameters` at
+  `https://openrouter.ai/api/v1/models` lists `structured_outputs`, or every
+  generation silently falls back. Under strict mode **every** property must be
+  listed in the schema's `required`, including optional-looking ones like
+  `altTexts`.
+- **Reasoning tokens are spent from `max_tokens`.** On a reasoning model
+  (Gemini 3.x, o-series) a default-effort call can spend the entire budget
+  thinking and return an empty completion — which surfaces as
+  `finish_reason: "length"`, not an error. Hence `reasoning: { effort: "low" }`
+  on every request; these tasks are given their facts and need no deliberation.
 - **Speed writes nothing to Shopify.** An app cannot edit theme code, so the
   module measures, scans, and hands back exact changes. Do not add a "fix"
   that only pretends to work.
